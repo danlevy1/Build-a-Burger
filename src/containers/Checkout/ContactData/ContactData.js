@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import {connect} from 'react-redux';
 import Button from "../../../components/UI/Button/Button";
 import Spinner from "../../../components/UI/Spinner/Spinner";
 import axios from "../../../axios-orders";
@@ -106,7 +107,7 @@ class ContactData extends Component {
             formData[formElementID] = this.state.orderForm[formElementID].value;
         }
         const order = {
-            ingredients: this.props.ingredients,
+            ingredients: this.props.ings,
             price: this.props.price,
             orderData: formData
         };
@@ -120,7 +121,7 @@ class ContactData extends Component {
                 this.setState({ loading: false });
                 console.log(error);
             });
-        console.log(this.props.ingredients);
+        console.log(this.props.ings);
     };
 
     inputChangedHandler = (event, inputID) => {
@@ -132,7 +133,10 @@ class ContactData extends Component {
         };
 
         updatedFormElement.value = event.target.value;
-        updatedFormElement.valid = this.checkValidity(updatedFormElement.value, updatedFormElement.validation);
+        updatedFormElement.valid = this.checkValidity(
+            updatedFormElement.value,
+            updatedFormElement.validation
+        );
         updatedFormElement.touched = true;
         updatedOrderForm[inputID] = updatedFormElement;
 
@@ -150,16 +154,16 @@ class ContactData extends Component {
             isValid = value.trim !== "" && isValid;
         }
 
-        if(rules.minLength) {
+        if (rules.minLength) {
             isValid = value.length >= rules.minLength && isValid;
         }
 
-        if(rules.maxLength) {
+        if (rules.maxLength) {
             isValid = value.length <= rules.maxLength && isValid;
         }
 
         return isValid;
-    }
+    };
 
     render() {
         const formElementsArray = [];
@@ -202,4 +206,11 @@ class ContactData extends Component {
     }
 }
 
-export default ContactData;
+const mapStateToProps = state => {
+    return {
+        ings: state.ingredients,
+        price: state.totalPrice
+    }
+}
+
+export default connect(mapStateToProps)(ContactData);
