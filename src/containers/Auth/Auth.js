@@ -42,10 +42,21 @@ class Auth extends Component {
         isSignup: true
     };
 
-    checkValidity = (value, rules) => {
+    componentDidMount() {
+        console.log(this.props);
+        if (!this.props.buidlingBurger && this.props.authRedirectPath !== "/") {
+            this.props.onSetAuthRedirectPath();
+        }
+    }
+
+    checkValidity(value, rules) {
         let isValid = true;
+        if (!rules) {
+            return true;
+        }
+
         if (rules.required) {
-            isValid = value.trim !== "" && isValid;
+            isValid = value.trim() !== "" && isValid;
         }
 
         if (rules.minLength) {
@@ -56,8 +67,18 @@ class Auth extends Component {
             isValid = value.length <= rules.maxLength && isValid;
         }
 
+        if (rules.isEmail) {
+            const pattern = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+            isValid = pattern.test(value) && isValid;
+        }
+
+        if (rules.isNumeric) {
+            const pattern = /^\d+$/;
+            isValid = pattern.test(value) && isValid;
+        }
+
         return isValid;
-    };
+    }
 
     inputChangedHandler = (event, controlName) => {
         const updatedControls = {
@@ -125,7 +146,7 @@ class Auth extends Component {
 
         let authRedirect = null;
         if (this.props.isAuthenticated) {
-            authRedirect = <Redirect to='/' />;
+            authRedirect = <Redirect to={this.props.authRedirectPath} />;
         }
 
         return (
@@ -148,13 +169,16 @@ const mapStateToProps = state => {
     return {
         loading: state.auth.loading,
         error: state.auth.error,
-        isAuthenticated: state.auth.token !== null
+        isAuthenticated: state.auth.token !== null,
+        buidlingBurger: state.burgerBuilder.building,
+        authRedirectPath: state.auth.authRedirectPath
     };
 };
 
 const mapDispatchToProps = dispatch => {
     return {
-        onAuth: (email, password, isSignup) => dispatch(actions.auth(email, password, isSignup))
+        onAuth: (email, password, isSignup) => dispatch(actions.auth(email, password, isSignup)),
+        onSetAuthRedirectPath: () => dispatch(actions.setAuthRedirectPath("/"))
     };
 };
 
